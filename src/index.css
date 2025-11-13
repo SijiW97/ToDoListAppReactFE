@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ------------------------------------------------------
+   Custom global styles for the app
+   ------------------------------------------------------ */
+
+/* Use a nice gradient background for the whole page */
+body {
+  @apply bg-gradient-to-r from-pink-500 via-purple-500 to-orange-400 text-gray-900 min-h-screen;
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Optional: center your main container (like the Todo app card) */
+#root {
+  @apply flex items-center justify-center min-h-screen;
+}
+
+/* Custom scroll bar (optional) */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 9999px;
+}
+
+/* You can also define custom animation or transition effects */
+.fade-in {
+  @apply transition-opacity duration-500 ease-in;
+}
