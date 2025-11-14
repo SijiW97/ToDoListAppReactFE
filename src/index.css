@@ -8,7 +8,12 @@
 
 /* Use a nice gradient background for the whole page */
 body {
-  @apply bg-gradient-to-r from-pink-500 via-purple-500 to-orange-400 text-gray-900 min-h-screen;
+  background-image: url('/src/assets/background.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  
+  @apply text-gray-900 min-h-screen;
   font-family: 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

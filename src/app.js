@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Trash2, Edit2, Check, X, Plus } from 'lucide-react';
 import axios from "axios";
+import cardImage from "./assets/card.jpg";
 
 const API_URL = "https://backend-gzk7.onrender.com/api/todos";
 
@@ -10,10 +11,10 @@ const TodoApp = () => {
   const [editingId, setEditingId] = useState(null);
   const [editText, setEditText] = useState('');
   const [filter, setFilter] = useState('all');
-  const [setToast] = useState({ show: false, message: '', type: '' });
-  const [loading ] = useState(false);
+  const [toast, setToast] = useState({ show: false, message: '', type: '' });
+  const [loading] = useState(false);
 
- useEffect(() => {
+  useEffect(() => {
     fetchTodos();
   }, []);
 
@@ -32,9 +33,9 @@ const TodoApp = () => {
   };
 
   const addTodo = async (e) => {
-    e.preventDefault(); 
+    e.preventDefault();
     if (!newTodo.trim()) return;
-     try {
+    try {
       const response = await axios.post(API_URL, { title: newTodo });
       setTodos([response.data, ...todos]);
       setNewTodo("");
@@ -43,12 +44,28 @@ const TodoApp = () => {
     }
   };
 
-const toggleComplete = async (id, completed) => {
+  const toggleComplete = async (id, completed) => {
     try {
-      const response = await axios.put(`${API_URL}/${id}`, { completed: !completed });
-      setTodos(todos.map(todo => (todo._id === id ? response.data : todo)));
+      const response = await fetch(`${API_URL}/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ completed: !completed })
+      });
+      const updatedTodo = await response.json();
+
+      // Remove the todo from its current position
+      const filteredTodos = todos.filter(todo => todo._id !== id);
+
+      // If marking as complete, add to end; if marking incomplete, add to beginning
+      const newTodos = updatedTodo.completed
+        ? [...filteredTodos, updatedTodo]  // Completed goes to end
+        : [updatedTodo, ...filteredTodos]; // Incomplete goes to beginning
+
+      setTodos(newTodos);
+      showToast(completed ? 'Todo marked as active' : 'Todo completed!');
     } catch (error) {
       console.error("Error updating todo:", error);
+      showToast('Failed to update todo', 'error');
     }
   };
 
@@ -69,17 +86,17 @@ const toggleComplete = async (id, completed) => {
   };
 
   const saveEdit = async (id) => {
-  if (!editText.trim()) return;
-  try {
-    const response = await axios.put(`${API_URL}/${id}`, { title: editText });
-    setTodos(todos.map(t => (t._id === id ? response.data : t)));
-    setEditingId(null);
-    setEditText('');
-    showToast('Todo updated!');
-  } catch (error) {
-    console.error("Error updating todo:", error);
-  }
-};
+    if (!editText.trim()) return;
+    try {
+      const response = await axios.put(`${API_URL}/${id}`, { title: editText });
+      setTodos(todos.map(t => (t._id === id ? response.data : t)));
+      setEditingId(null);
+      setEditText('');
+      showToast('Todo updated!');
+    } catch (error) {
+      console.error("Error updating todo:", error);
+    }
+  };
 
   const cancelEdit = () => {
     setEditingId(null);
@@ -93,9 +110,17 @@ const toggleComplete = async (id, completed) => {
   });
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-400 via-purple-500 to-orange-400 p-6">
-      <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 w-full max-w-md shadow-2xl">
-        
+    <div className="min-h-screen flex items-center justify-center p-6">
+      <div className="rounded-3xl p-8 w-full max-w-md shadow-2xl backdrop-blur-md"
+        style={{
+          backgroundImage: `url(${cardImage})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+          backgroundColor: "rgba(0,0,0,0.3)",
+          backgroundBlendMode: "overlay",
+        }}>
+
         {/* Header */}
         <div className="text-center mb-6">
           <h1 className="text-3xl font-bold text-white flex justify-center items-center gap-2">
@@ -128,9 +153,8 @@ const toggleComplete = async (id, completed) => {
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`flex-1 py-2 text-white font-medium capitalize rounded-lg transition ${
-                filter === f ? 'bg-white/30' : 'hover:bg-white/10'
-              }`}
+              className={`flex-1 py-2 text-white font-medium capitalize rounded-lg transition ${filter === f ? 'bg-white/30' : 'hover:bg-white/10'
+                }`}
             >
               {f}
             </button>
@@ -161,18 +185,16 @@ const toggleComplete = async (id, completed) => {
             filteredTodos.map(todo => (
               <div
                 key={todo._id}
-                className={`flex items-center justify-between bg-white/20 rounded-xl p-3 transition hover:bg-white/30 ${
-                  todo.completed ? 'opacity-70' : ''
-                }`}
+                className={`flex items-center justify-between bg-white/20 rounded-xl p-3 transition hover:bg-white/30 ${todo.completed ? 'opacity-70' : ''
+                  }`}
               >
                 <div className="flex items-center space-x-3 flex-1">
                   <button
                     onClick={() => toggleComplete(todo._id, todo.completed)}
-                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition ${
-                      todo.completed
+                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition ${todo.completed
                         ? 'bg-white border-white'
                         : 'border-white border-opacity-70 hover:border-opacity-100'
-                    }`}
+                      }`}
                   >
                     {todo.completed && <Check size={16} className="text-purple-600" />}
                   </button>
@@ -187,9 +209,8 @@ const toggleComplete = async (id, completed) => {
                     />
                   ) : (
                     <span
-                      className={`text-white font-medium flex-1 ${
-                        todo.completed ? 'line-through' : ''
-                      }`}
+                      className={`text-white font-medium flex-1 ${todo.completed ? 'line-through' : ''
+                        }`}
                     >
                       {todo.title}
                     </span>
